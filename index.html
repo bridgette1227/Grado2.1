@@ -431,18 +431,9 @@ secretTrigger.addEventListener('click', async ()=>{
   });
 });
 
-/* ---------- Nota sobre permisos (Firestore Rules) ----------
-Como pediste modo seguro, en la consola de Firebase debes usar reglas que permitan solo accesos controlados.
-Mientras desarrollas puedes poner reglas de prueba, pero para producción te recomiendo configurar reglas que permitan:
- - Escritura pública (añadir mensajes) desde tu frontend, pero
- - Lectura/Escritura (borrar) solo para admins, o
- - Alternativamente usar Cloud Functions con autenticación para las operaciones admin.
-
-Si necesitas, te doy el fragmento de reglas recomendado para empezar en modo "semi-abierto" y luego endurecerlo.
---------------------------------------------------------- */
-
 </script>
 
 </body>
 </html>
+
 
