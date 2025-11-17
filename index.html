@@ -154,9 +154,7 @@ button[type=submit]{padding:12px;border-radius:12px;border:none;background:linea
 </section>
 
 <script>
-const STORAGE_KEY='mensajesGraduacion';
-const SECRET_PASSWORD='B2008rid@';
-
+/* ---------- Variables DOM ---------- */
 const enterBtn = document.getElementById('enterBtn');
 const hero = document.getElementById('hero');
 const menu = document.getElementById('menuOpciones');
@@ -178,7 +176,9 @@ const listaVida = document.getElementById('listaVida');
 let tipoSeleccionado = '';
 let secretClickCount = 0;
 let escrituraTimeout = null;
+const SECRET_PASSWORD='B2008rid@';
 
+/* ---------- Mensajes Personalizados (queda igual) ---------- */
 const mensajesPersonalizados = {
   "Alba Luz Quevedo Rincón":"Mi Albys… Qué difícil poner en palabras lo que significas para mí. Tú empezaste siendo mi directora de grupo, pero terminaste convirtiéndote en una de las personas más importantes de mi vida. Gracias por abrirme tu corazón, por escucharme sin juzgarme, por permitirme ser yo misma y confiar en mí como muy pocas personas lo hacen. Contarte mis cosas y escucharte contarme las tuyas creó un lazo que no se rompe con nada. No sé qué haría ahora sin ti, porque te convertiste en un lugar seguro, en una amiga de verdad, en alguien que me cambió la vida sin darse cuenta. Espero que lo que somos hoy siga creciendo, que no sea un recuerdo bonito del colegio sino un vínculo que nos acompañe siempre. Te quiero con el alma, vida mía, y gracias por existir en mi camino.",
   "Claudia Marcela Arbeláez":"Mi Marce, tú fuiste mucho más que mi profesora de 4° y 5°. Fuiste una huella profunda, de esas que se quedan para siempre en la memoria y en el corazón. Gracias por enseñarme con tanta paciencia, por creer en mí desde tan pequeña, por hacerme sentir capaz incluso cuando yo no lo veía. El cariño que te tengo nace de esos años en los que tus palabras y tu forma de ser hicieron que amar aprender fuera fácil y bonito. Te quiero bastante, y siempre vas a ser una parte esencial de mis recuerdos de infancia.",
@@ -198,7 +198,7 @@ const mensajesPersonalizados = {
 };
 const mensajeGeneral="A todos los que han cruzado mi camino, gracias. Cada uno dejó algo en mí: una palabra, una sonrisa, un recuerdo o una lección. No importa si estuvieron poco o mucho tiempo; todos aportaron algo que me ayudó a crecer y a ser quien soy hoy. Gracias por los momentos compartidos, por el cariño, por el apoyo y por hacer mi vida un poco más bonita. Siempre guardaré un lugar especial para cada uno en mi corazón.";
 
-// --- SLIDES ---
+/* ---------- Slides (igual) ---------- */
 (function(){
   const slides = Array.from(document.querySelectorAll('.slide'));
   if(!slides.length) return;
@@ -210,7 +210,7 @@ const mensajeGeneral="A todos los que han cruzado mi camino, gracias. Cada uno d
   },3500);
 })();
 
-// --- HERO Y MENÚ ---
+/* ---------- Hero y menú (igual) ---------- */
 enterBtn.addEventListener('click', ()=>{
   hero.style.display='none';
   menu.style.display='flex';
@@ -235,7 +235,6 @@ menu.addEventListener('click',(e)=>{
   tituloForm.textContent = tipoSeleccionado==='U'?'Consejos para la U 💛':'Mensajes para la vida ✨';
 });
 
-// --- BACK ARROW ---
 backArrow.addEventListener('click',()=>{
   if(mensajesSection.style.display==='block'){
     mensajesSection.style.display='none';
@@ -258,41 +257,13 @@ backArrowSecreto.addEventListener('click',()=>{
   menu.style.display='flex';
 });
 
-// --- FUNCIONES ---
 function limpiarFormularioYRespuesta(){
   form.reset();
   respuestaDiv.style.display='none';
   respuestaDiv.textContent='';
 }
 
-// --- GUARDAR MENSAJES ---
-form.addEventListener('submit',(e)=>{
-  e.preventDefault();
-  const nombre = document.getElementById('nombre').value.trim();
-  const mensaje = document.getElementById('mensaje').value.trim();
-  if(!nombre||!mensaje) return;
-
-  const almacen = JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
-  almacen.push({tipo: tipoSeleccionado||'Vida', nombre, mensaje, ts: new Date().toISOString()});
-  localStorage.setItem(STORAGE_KEY,JSON.stringify(almacen));
-
-  const respuestas=[
-    "Gracias por tus palabras, me las llevo conmigo siempre. 💛",
-    "Tu mensaje significa más de lo que imaginas. ✨",
-    "Gracias por estar aquí en este día tan importante para mí. 🌟",
-    "Tus palabras me llenan el corazón. 💛",
-    "Gracias por hacer parte de este momento especial. 🎓✨",
-    "Lo leo y me emociono: gracias por ser parte de mi historia. 🥹",
-    "Qué regalo recibir tus palabras hoy. Gracias por venir. 🌼"
-  ];
-  const r = respuestas[Math.floor(Math.random()*respuestas.length)];
-  respuestaDiv.textContent = r;
-  respuestaDiv.style.display='block';
-  form.reset();
-  setTimeout(()=>{respuestaDiv.style.display='none';},3000);
-});
-
-// --- BUSCADOR LIBRO ---
+/* ---------- Buscar cartas (igual) ---------- */
 buscador.addEventListener('keypress', e=>{
   if(e.key==='Enter'){
     e.preventDefault();
@@ -323,52 +294,155 @@ buscador.addEventListener('keypress', e=>{
     escribir();
   }
 });
+</script>
 
-// --- MODO SECRETO ---
-secretTrigger.addEventListener('click',()=>{
-  secretClickCount++;
-  if(secretClickCount>=5){
-    const pass=prompt("Ingrese la contraseña secreta:");
-    if(pass===SECRET_PASSWORD){
-      hero.style.display='none';
-      menu.style.display='none';
-      modoSecreto.style.display='block';
+<!-- =========================
+     Firebase + Firestore
+     (script colocado antes de </body>)
+     ========================= -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, getDocs, deleteDoc, doc,
+  serverTimestamp, query, orderBy
+} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-      const almacen=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
-      listaU.innerHTML=''; listaVida.innerHTML='';
-      almacen.forEach((m,index)=>{
-        const div=document.createElement('div');
-        div.className='mensaje-secreto';
-        div.innerHTML=`${m.nombre}: ${m.mensaje} <button data-idx="${index}" style="float:right;background:var(--gold);color:#fff;border:none;padding:2px 6px;border-radius:6px;cursor:pointer;">Eliminar</button>`;
-        const btnEliminar=div.querySelector('button');
-        btnEliminar.addEventListener('click',()=>{
-          almacen.splice(index,1);
-          localStorage.setItem(STORAGE_KEY,JSON.stringify(almacen));
-          div.remove();
-        });
-        if(m.tipo==='U') listaU.appendChild(div);
-        else listaVida.appendChild(div);
-      });
-    }
-    secretClickCount=0;
+/* ----- Tu configuración de Firebase (ya nos la diste) ----- */
+const firebaseConfig = {
+  apiKey: "AIzaSyA4uac703VWbNr6SUAHegHdrMqXV8ibrDA",
+  authDomain: "grado-95770.firebaseapp.com",
+  projectId: "grado-95770",
+  storageBucket: "grado-95770.firebasestorage.app",
+  messagingSenderId: "400014757032",
+  appId: "1:400014757032:web:5cb92dfdbd001da7ee869d",
+  measurementId: "G-0K79TKELQG"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+/* ---------- Funciones para Firestore ---------- */
+async function guardarMensajeFirestore(tipo, nombre, mensaje){
+  try{
+    await addDoc(collection(db, "mensajes"), {
+      tipo: tipo || "Vida",
+      nombre,
+      mensaje,
+      fecha: serverTimestamp()
+    });
+    return true;
+  }catch(err){
+    console.error("Error guardando en Firestore:", err);
+    return false;
   }
+}
+
+async function obtenerMensajesFirestore(){
+  try{
+    const q = query(collection(db, "mensajes"), orderBy("fecha","asc"));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }catch(err){
+    console.error("Error obteniendo mensajes:", err);
+    return [];
+  }
+}
+
+async function eliminarMensajeFirestore(id){
+  try{
+    await deleteDoc(doc(db, "mensajes", id));
+    return true;
+  }catch(err){
+    console.error("Error eliminando mensaje:", err);
+    return false;
+  }
+}
+
+/* ---------- Conectar el formulario para usar Firestore ---------- */
+form.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const nombre = document.getElementById('nombre').value.trim();
+  const mensaje = document.getElementById('mensaje').value.trim();
+  if(!nombre || !mensaje) return;
+
+  const ok = await guardarMensajeFirestore(tipoSeleccionado || 'Vida', nombre, mensaje);
+  const respuestas = [
+    "Gracias por tus palabras, me las llevo conmigo siempre. 💛",
+    "Tu mensaje significa más de lo que imaginas. ✨",
+    "Gracias por estar aquí en este día tan importante para mí. 🌟",
+    "Tus palabras me llenan el corazón. 💛",
+    "Gracias por hacer parte de este momento especial. 🎓✨",
+    "Lo leo y me emociono: gracias por ser parte de mi historia. 🥹",
+    "Qué regalo recibir tus palabras hoy. Gracias por venir. 🌼"
+  ];
+  if(ok){
+    respuestaDiv.textContent = respuestas[Math.floor(Math.random()*respuestas.length)];
+  } else {
+    respuestaDiv.textContent = "Hubo un error guardando tu mensaje. Intenta de nuevo, por favor.";
+  }
+  respuestaDiv.style.display='block';
+  form.reset();
+  setTimeout(()=>{ respuestaDiv.style.display='none'; },3000);
 });
 
-// --- SLIDES HERO ---
-(function(){
-  const slides = Array.from(document.querySelectorAll('.slide'));
-  if(!slides.length) return;
-  let idx=0;
-  setInterval(()=>{
-    slides[idx].classList.remove('visible');
-    idx=(idx+1)%slides.length;
-    slides[idx].classList.add('visible');
-  },3500);
-})();
+/* ---------- Modo Secreto: leer y mostrar mensajes desde Firestore ---------- */
+secretTrigger.addEventListener('click', async ()=>{
+  secretClickCount++;
+  if(secretClickCount < 5) return;
+
+  const pass = prompt("Ingrese la contraseña secreta:");
+  secretClickCount = 0;
+  if(pass !== SECRET_PASSWORD) return;
+
+  hero.style.display='none';
+  menu.style.display='none';
+  modoSecreto.style.display='block';
+
+  listaU.innerHTML = '';
+  listaVida.innerHTML = '';
+
+  const mensajes = await obtenerMensajesFirestore();
+
+  mensajes.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'mensaje-secreto';
+    // Escape de texto mínimo para evitar HTML injection al mostrar
+    const safeNombre = String(m.nombre).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const safeMensaje = String(m.mensaje).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    div.innerHTML = `
+      <b>${safeNombre}</b>: <span style="white-space:pre-wrap;">${safeMensaje}</span>
+      <button data-id="${m.id}" style="float:right;background:var(--gold);color:#fff;border:none;padding:2px 6px;border-radius:6px;cursor:pointer;">
+        Eliminar
+      </button>
+    `;
+
+    const btn = div.querySelector('button');
+    btn.addEventListener('click', async ()=>{
+      const confirmDel = confirm("¿Eliminar este mensaje?");
+      if(!confirmDel) return;
+      const ok = await eliminarMensajeFirestore(m.id);
+      if(ok) div.remove();
+      else alert("No se pudo eliminar. Revisa permisos o intenta luego.");
+    });
+
+    if(m.tipo === 'U') listaU.appendChild(div);
+    else listaVida.appendChild(div);
+  });
+});
+
+/* ---------- Nota sobre permisos (Firestore Rules) ----------
+Como pediste modo seguro, en la consola de Firebase debes usar reglas que permitan solo accesos controlados.
+Mientras desarrollas puedes poner reglas de prueba, pero para producción te recomiendo configurar reglas que permitan:
+ - Escritura pública (añadir mensajes) desde tu frontend, pero
+ - Lectura/Escritura (borrar) solo para admins, o
+ - Alternativamente usar Cloud Functions con autenticación para las operaciones admin.
+
+Si necesitas, te doy el fragmento de reglas recomendado para empezar en modo "semi-abierto" y luego endurecerlo.
+--------------------------------------------------------- */
+
 </script>
+
 </body>
 </html>
-
-
-
 
